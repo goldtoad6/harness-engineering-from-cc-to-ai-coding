@@ -9,4 +9,7 @@
 !/book/
 !/book/**
 /book/book/
+!/book-en/
+!/book-en/**
+/book-en/book/
 **/.DS_Store

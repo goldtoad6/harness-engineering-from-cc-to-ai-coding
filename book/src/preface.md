@@ -4,6 +4,10 @@
   <img src="./assets/cover-zh.jpeg" alt="《马书》封面" width="420">
 </p>
 
+<p align="center">
+  <a href="./en/">Read in English (Preview)</a>
+</p>
+
 《驾驭工程》，中文别名《马书》。
 
 我认为，Claude Code 源码最佳的“食用”姿势应该是转化为一本书，供自己系统学习。对我来说，看书学习比直接看源码更舒服，也更容易形成完整的认知框架。

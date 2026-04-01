@@ -28,15 +28,20 @@ jobs:
       - name: Install mdBook
         run: cargo install mdbook --no-default-features --features search --vers "^0.4" --locked
 
-      - name: Build book
+      - name: Build books
         run: |
+          rm -rf dist
           mdbook build book
-          touch book/book/.nojekyll
+          mdbook build book-en
+          mkdir -p dist/en
+          cp -R book/book/. dist/
+          cp -R book-en/book/. dist/en/
+          touch dist/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: book/book
+          path: dist
 
   deploy:
     environment:

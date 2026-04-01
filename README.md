@@ -12,7 +12,8 @@
 
 ## 在线阅读
 
-- GitHub Pages：<https://zhanghandong.github.io/harness-engineering-from-cc-to-ai-coding/>
+- 中文版 GitHub Pages：<https://zhanghandong.github.io/harness-engineering-from-cc-to-ai-coding/>
+- 英文版 GitHub Pages（预览）：<https://zhanghandong.github.io/harness-engineering-from-cc-to-ai-coding/en/>
 
 ## 本书讲什么
 
@@ -57,3 +58,4 @@ mdbook serve book
 - 本书基于公开发布包与 source map 的逆向分析，仅用于技术研究与工程讨论
 - 书中内容聚焦工程实现与设计模式，不代表 Anthropic 官方立场
 - 本仓库默认只跟踪书籍发布所需文件，以便直接部署到 GitHub Pages
+- 英文版站点已经搭好目录、封面和章节占位页，后续将逐章翻译补全

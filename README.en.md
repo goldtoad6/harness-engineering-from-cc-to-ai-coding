@@ -8,9 +8,12 @@
 
 This repository publishes a technical book about Harness Engineering through the lens of Claude Code. The material is derived from the publicly distributed Claude Code `v2.1.88` package and source map reconstruction, then turned into a book focused on reusable engineering patterns rather than product marketing or unofficial feature rumors.
 
+The English edition is currently a scaffolded preview with the full table of contents, cover, and placeholder chapter pages. The Chinese edition remains the canonical version while the English translation is added chapter by chapter.
+
 ## Read Online
 
-- GitHub Pages: <https://zhanghandong.github.io/harness-engineering-from-cc-to-ai-coding/>
+- English edition (preview): <https://zhanghandong.github.io/harness-engineering-from-cc-to-ai-coding/en/>
+- Chinese edition: <https://zhanghandong.github.io/harness-engineering-from-cc-to-ai-coding/>
 
 ## What the Book Covers
 

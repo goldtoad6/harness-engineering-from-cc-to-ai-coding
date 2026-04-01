@@ -1,0 +1,16 @@
+[book]
+authors = ["Zhang Alex"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Harness Engineering: From Claude Code Internals to AI Coding Best Practices"
+description = "English edition scaffold for the Harness Engineering book based on Claude Code v2.1.88 analysis"
+
+[build]
+build-dir = "book"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "ayu"
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
+site-url = "/harness-engineering-from-cc-to-ai-coding/en/"
