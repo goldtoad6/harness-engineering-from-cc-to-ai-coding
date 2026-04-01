@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./book/src/assets/cover-zh.jpeg" alt="《马书》封面" width="420">
+</p>
+
 [English](./README.en.md)
 
 # 驾驭工程：从 Claude Code 源码到 AI 编码最佳实践
