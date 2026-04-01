@@ -1,0 +1,31 @@
+# 附录 C：术语表
+
+本附录收录本书中首次出现时附英文原文的技术术语，按中文拼音排序。
+
+| 术语 | 英文 | 定义 | 首见章节 |
+|------|------|------|---------|
+| Agent Loop | Agent Loop | AI Agent 的核心执行循环：接收输入 → 调用模型 → 执行工具 → 判断是否继续 | 第3章 |
+| 并发分区 | Partition | 将工具调用分为可并行和必须串行的批次，基于 `isConcurrencySafe` 属性 | 第4章 |
+| 抽象语法树 | AST (Abstract Syntax Tree) | 源代码的树状结构表示，保留语义关系（而非纯文本） | 第27章 |
+| 大纲 | Outline | 书籍目录结构和各章主题的概览文档 | 前言 |
+| 动态边界 | Dynamic Boundary | 系统提示词中分隔静态可缓存内容与动态会话内容的标记 | 第5章 |
+| 防御性 Git | Defensive Git | 在 AI 执行 Git 操作时通过显式安全规则防止数据丢失的模式 | 第26章 |
+| 工具 Schema | Tool Schema | 工具的 JSON Schema 定义，包含名称、描述、输入参数格式 | 第2章 |
+| 驾驭工程 | Harness Engineering | 通过提示词、工具和配置（而非代码逻辑）引导 AI 模型行为的实践 | 第1章 |
+| 渐进式自主 | Graduated Autonomy | 从手动确认到全自动的多级权限模式，每级都有安全回退 | 第26章 |
+| 技能 | Skill | 可调用的提示词模板，通过 SkillTool 注入对话上下文 | 第22章 |
+| 缓存中断 | Cache Break | 提示词缓存前缀因内容变化而失效的事件 | 第14章 |
+| 锁存 | Latch | 一旦进入即保持稳定的会话级状态，防止缓存振荡或行为抖动 | 第13章、第24章 |
+| 模式提炼 | Pattern Extraction | 从源码分析中提取可复用的设计模式，包含名称、问题、解决方案 | 全书 |
+| 熔断器 | Circuit Breaker | 连续 N 次失败后强制停止自动化流程，降级到安全状态 | 第9章、第25章 |
+| 死代码消除 | DCE (Dead Code Elimination) | Bun 的 `feature()` 函数实现编译时移除门控代码 | 第1章 |
+| 失败关闭 | Fail-Closed | 系统默认选择最安全的选项，需显式声明才能解锁危险操作 | 第2章、第24章 |
+| 提示词缓存 | Prompt Cache | Anthropic API 特性，缓存消息前缀以减少重复 token 处理 | 第13章 |
+| 微压缩 | Microcompact | 精准移除特定工具结果（而非完整压缩整个对话），保持缓存前缀稳定 | 第11章 |
+| 压缩 | Compaction | 总结对话历史以释放上下文窗口空间 | 第9章 |
+| 压缩后恢复 | Post-Compact Restore | 压缩完成后选择性恢复最关键的文件内容和技能信息 | 第10章 |
+| YOLO 分类器 | YOLO Classifier | 二次 Claude API 调用用于在自动模式下做出权限批准/拒绝决策 | 第17章 |
+| Feature Flag | Feature Flag (tengu_*) | 通过 GrowthBook 运行时配置的实验门控，控制功能启用/禁用 | 第1章、第23章 |
+| Hooks | Hooks | 用户自定义的 Shell 命令，在特定事件（如工具调用前后）时执行 | 第18章 |
+| MCP | Model Context Protocol | 模型上下文协议，标准化 AI 模型与外部工具/数据源的交互 | 第22章 |
+| Token 预算 | Token Budget | 为上下文窗口中的各类内容分配的 token 使用上限 | 第12章、第25章 |
