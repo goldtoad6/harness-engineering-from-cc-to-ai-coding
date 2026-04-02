@@ -54,15 +54,16 @@
 - [Chapter 21: Effort, Fast Mode, and Thinking](./part6/ch21.md)
 - [Chapter 22: Skills System - From Built-In to User-Defined](./part6/ch22.md)
 - [Chapter 23: The Unreleased Feature Pipeline - The Roadmap Behind 89 Feature Flags](./part6/ch23.md)
+- [Chapter 24: Cross-Session Memory - From Forgetfulness to Persistent Learning](./part6/ch24.md)
 
 ---
 
 # Part VII: Lessons for AI Agent Builders
 
-- [Chapter 24: Harness Engineering Principles](./part7/ch24.md)
-- [Chapter 25: Context Management as a Core Capability](./part7/ch25.md)
-- [Chapter 26: Production-Grade AI Coding Patterns](./part7/ch26.md)
-- [Chapter 27: Where Claude Code Falls Short](./part7/ch27.md)
+- [Chapter 25: Harness Engineering Principles](./part7/ch25.md)
+- [Chapter 26: Context Management as a Core Capability](./part7/ch26.md)
+- [Chapter 27: Production-Grade AI Coding Patterns](./part7/ch27.md)
+- [Chapter 28: Where Claude Code Falls Short](./part7/ch28.md)
 
 ---
 

@@ -54,15 +54,16 @@
 - [第21章：Effort、Fast Mode 与 Thinking](./part6/ch21.md)
 - [第22章：技能系统 — 从内置到用户自定义](./part6/ch22.md)
 - [第23章：未发布功能管线 — 89 个 Feature Flag 背后的路线图](./part6/ch23.md)
+- [第24章：跨会话记忆 — 从遗忘到持久学习](./part6/ch24.md)
 
 ---
 
 # 第七篇：AI Agent 构建者的经验教训
 
-- [第24章：驾驭工程原则](./part7/ch24.md)
-- [第25章：上下文管理作为核心能力](./part7/ch25.md)
-- [第26章：生产级 AI 编码模式](./part7/ch26.md)
-- [第27章：Claude Code 的不足之处](./part7/ch27.md)
+- [第25章：驾驭工程原则](./part7/ch25.md)
+- [第26章：上下文管理作为核心能力](./part7/ch26.md)
+- [第27章：生产级 AI 编码模式](./part7/ch27.md)
+- [第28章：Claude Code 的不足之处](./part7/ch28.md)
 
 ---
 

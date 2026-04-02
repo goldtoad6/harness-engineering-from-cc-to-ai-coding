@@ -14,33 +14,33 @@
 
 | 文件 | 职责 | 相关章节 |
 |------|------|---------|
-| `Tool.ts` | 工具接口契约，`TOOL_DEFAULTS` 失败关闭默认值 | 第2章、第24章 |
+| `Tool.ts` | 工具接口契约，`TOOL_DEFAULTS` 失败关闭默认值 | 第2章、第25章 |
 | `tools.ts` | 工具注册，Feature Flag 条件加载 | 第2章 |
 | `services/tools/toolOrchestration.ts` | 工具执行编排，`partitionToolCalls` 并发分区 | 第4章 |
 | `services/tools/toolExecution.ts` | 单工具执行生命周期 | 第4章 |
 | `services/tools/StreamingToolExecutor.ts` | 流式工具执行器 | 第4章 |
-| `tools/BashTool/` | Bash 工具实现，含 Git 安全协议 | 第8章、第26章 |
-| `tools/FileEditTool/` | 文件编辑工具，"编辑前先读取"强制 | 第8章、第26章 |
+| `tools/BashTool/` | Bash 工具实现，含 Git 安全协议 | 第8章、第27章 |
+| `tools/FileEditTool/` | 文件编辑工具，"编辑前先读取"强制 | 第8章、第27章 |
 | `tools/FileReadTool/` | 文件读取工具，默认 2000 行 | 第8章 |
 | `tools/GrepTool/` | 基于 ripgrep 的搜索工具 | 第8章 |
 | `tools/AgentTool/` | 子 Agent 生成工具 | 第8章、第20章 |
 | `tools/SkillTool/` | 技能调用工具 | 第8章、第22章 |
-| `tools/SkillTool/prompt.ts` | 技能列表预算：1% 上下文窗口 | 第12章、第25章 |
+| `tools/SkillTool/prompt.ts` | 技能列表预算：1% 上下文窗口 | 第12章、第26章 |
 
 ## 系统提示词
 
 | 文件 | 职责 | 相关章节 |
 |------|------|---------|
-| `constants/prompts.ts` | 系统提示词构建，`SYSTEM_PROMPT_DYNAMIC_BOUNDARY` | 第5章、第6章、第24章 |
+| `constants/prompts.ts` | 系统提示词构建，`SYSTEM_PROMPT_DYNAMIC_BOUNDARY` | 第5章、第6章、第25章 |
 | `constants/systemPromptSections.ts` | 段落注册表，带缓存控制 scope | 第5章 |
-| `constants/toolLimits.ts` | 工具结果预算常量 | 第12章、第25章 |
+| `constants/toolLimits.ts` | 工具结果预算常量 | 第12章、第26章 |
 
 ## API 与缓存
 
 | 文件 | 职责 | 相关章节 |
 |------|------|---------|
 | `services/api/claude.ts` | API 调用构建，缓存断点放置 | 第13章 |
-| `services/api/promptCacheBreakDetection.ts` | 缓存中断检测，`PreviousState` 追踪 | 第14章、第24章 |
+| `services/api/promptCacheBreakDetection.ts` | 缓存中断检测，`PreviousState` 追踪 | 第14章、第25章 |
 | `utils/api.ts` | `splitSysPromptPrefix()` 三路缓存分割 | 第5章、第13章 |
 
 ## 上下文压缩
@@ -48,8 +48,8 @@
 | 文件 | 职责 | 相关章节 |
 |------|------|---------|
 | `services/compact/compact.ts` | 压缩编排，`POST_COMPACT_MAX_FILES_TO_RESTORE` | 第9章、第10章 |
-| `services/compact/autoCompact.ts` | 自动压缩阈值与熔断器 | 第9章、第24章、第25章 |
-| `services/compact/prompt.ts` | 压缩提示词模板 | 第9章、第27章 |
+| `services/compact/autoCompact.ts` | 自动压缩阈值与熔断器 | 第9章、第25章、第26章 |
+| `services/compact/prompt.ts` | 压缩提示词模板 | 第9章、第28章 |
 | `services/compact/microCompact.ts` | 基于时间的微压缩 | 第11章 |
 | `services/compact/apiMicrocompact.ts` | API 原生缓存微压缩 | 第11章 |
 
@@ -58,7 +58,7 @@
 | 文件 | 职责 | 相关章节 |
 |------|------|---------|
 | `utils/permissions/yoloClassifier.ts` | YOLO 自动模式分类器 | 第17章 |
-| `utils/permissions/denialTracking.ts` | 拒绝追踪，`DENIAL_LIMITS` | 第17章、第26章 |
+| `utils/permissions/denialTracking.ts` | 拒绝追踪，`DENIAL_LIMITS` | 第17章、第27章 |
 | `tools/BashTool/bashPermissions.ts` | Bash 命令权限检查 | 第16章 |
 
 ## CLAUDE.md 与技能
@@ -82,8 +82,20 @@
 
 | 文件 | 职责 | 相关章节 |
 |------|------|---------|
-| `utils/toolResultStorage.ts` | 大结果持久化，截断预览 | 第12章、第27章 |
+| `utils/toolResultStorage.ts` | 大结果持久化，截断预览 | 第12章、第28章 |
 | `utils/toolSchemaCache.ts` | 工具 Schema 缓存 | 第15章 |
+
+## 跨会话记忆
+
+| 文件 | 职责 | 相关章节 |
+|------|------|---------|
+| `memdir/memdir.ts` | MEMORY.md 索引与主题文件加载，注入系统提示词 | 第24章 |
+| `memdir/paths.ts` | 记忆目录路径解析，三级优先链 | 第24章 |
+| `services/extractMemories/extractMemories.ts` | Fork agent 自动提取记忆 | 第24章 |
+| `services/SessionMemory/sessionMemory.ts` | 滚动会话摘要，用于压缩 | 第24章 |
+| `utils/sessionStorage.ts` | JSONL 会话记录存储与恢复 | 第24章 |
+| `tools/AgentTool/agentMemory.ts` | 子 Agent 持久化与 VCS 快照 | 第24章 |
+| `services/autoDream/autoDream.ts` | 夜间记忆整合与修剪 | 第24章 |
 
 ## 配置与状态
 
