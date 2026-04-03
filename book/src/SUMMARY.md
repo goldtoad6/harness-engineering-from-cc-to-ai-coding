@@ -50,7 +50,9 @@
 
 # 第六篇：高级子系统
 
-- [第20章：Agent 集群与多 Agent 编排](./part6/ch20.md)
+- [第20章：Agent 派生与编排](./part6/ch20.md)
+- [第20b章：Teams 与多进程协作](./part6/ch20b.md)
+- [第20c章：Ultraplan — 远程多代理规划](./part6/ch20c.md)
 - [第21章：Effort、Fast Mode 与 Thinking](./part6/ch21.md)
 - [第22章：技能系统 — 从内置到用户自定义](./part6/ch22.md)
 - [第23章：未发布功能管线 — 89 个 Feature Flag 背后的路线图](./part6/ch23.md)
