@@ -8,6 +8,7 @@
 !/.github/workflows/**
 !/book/
 !/book/**
+/book/anthropic-ai-claude-code-2.1.91.tgz
 /book/book/
 !/book-en/
 !/book-en/**
