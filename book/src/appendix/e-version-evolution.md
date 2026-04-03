@@ -2,6 +2,8 @@
 
 本书核心分析基于 Claude Code v2.1.88（含完整 source map，可还原 4,756 个源文件）。本附录记录后续版本的关键变化及其对各章节的影响。
 
+> **导航提示**：每条变化链接到对应章节的版本演化小节，点击章节编号可跳转。
+
 > 由于 v2.1.89 起 Anthropic 移除了 source map 分发，以下分析基于 bundle 字符串信号对比 + v2.1.88 源码辅助推断，深度有限。
 
 ## v2.1.88 → v2.1.91
@@ -12,17 +14,17 @@
 
 | 变化 | 影响章节 | 详情 |
 |------|---------|------|
-| Tree-sitter WASM 移除 | ch16 权限系统 | Bash 安全从 AST 分析退回 regex/shell-quote；因 CC-643 性能问题 |
-| `"auto"` 权限模式正式化 | ch16-17 权限/YOLO | SDK 公开 API 新增 auto mode |
-| 冷压缩 + 对话框 + 快速回填熔断 | ch11 微压缩 | 新增延迟压缩策略和用户确认 UI |
+| Tree-sitter WASM 移除 | [ch16 权限系统](../part5/ch16.md#版本演化v2191-变化) | Bash 安全从 AST 分析退回 regex/shell-quote；因 CC-643 性能问题 |
+| `"auto"` 权限模式正式化 | [ch16](../part5/ch16.md#版本演化v2191-变化)-[ch17](../part5/ch17.md#版本演化v2191-变化) 权限/YOLO | SDK 公开 API 新增 auto mode |
+| 冷压缩 + 对话框 + 快速回填熔断 | [ch11 微压缩](../part3/ch11.md#版本演化v2191-变化) | 新增延迟压缩策略和用户确认 UI |
 
 ### 中影响变化
 
 | 变化 | 影响章节 | 详情 |
 |------|---------|------|
-| `staleReadFileStateHint` | ch09-10 上下文管理 | 工具执行期间文件 mtime 变化检测 |
-| Ultraplan 远程多代理规划 | ch20 Agent 集群 | CCR 远程会话 + Opus 4.6 + 30min 超时 |
-| 子代理增强 | ch20-21 多代理/Effort | 回合限制、精简 schema、成本引导 |
+| `staleReadFileStateHint` | [ch09](../part3/ch09.md#版本演化v2191-变化)-[ch10](../part3/ch10.md#版本演化v2191-变化) 上下文管理 | 工具执行期间文件 mtime 变化检测 |
+| Ultraplan 远程多代理规划 | [ch20 Agent 集群](../part6/ch20.md) | CCR 远程会话 + Opus 4.6 + 30min 超时 |
+| 子代理增强 | [ch20](../part6/ch20.md)-[ch21](../part6/ch21.md#版本演化v2191-变化) 多代理/Effort | 回合限制、精简 schema、成本引导 |
 
 ### 低影响变化
 
