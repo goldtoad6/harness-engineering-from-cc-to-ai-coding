@@ -193,4 +193,61 @@ The following events with random codenames are A/B tests with undisclosed purpos
 
 ---
 
+## v2.1.91 -> v2.1.92 (Incremental Changes)
+
+> Based on signal differences extracted between v2.1.91 and v2.1.92 bundles. Full comparison report available at `docs/version-diffs/v2.1.88-vs-v2.1.92.md`.
+
+### Overview
+
+| Metric | v2.1.91 | v2.1.92 | Delta |
+|--------|---------|---------|-------|
+| cli.js size | 12.5MB | 12.6MB | +59KB |
+| Tengu events | 860 | 857 | +19 / -21 (net -3) |
+| Environment variables | 183 | 186 | +3 |
+| seccomp binaries | None | arm64 + x64 | **New** |
+
+### Key Additions
+
+| Subsystem | New Signals | Affected Chapters | Analysis |
+|-----------|------------|-------------------|----------|
+| **Tools** | `advisor_command`, `advisor_dialog_shown` + 10 advisor_* identifiers | ch04 | Entirely new AdvisorTool — the first non-execution tool with its own model call chain |
+| **Tools** | `tool_result_dedup` | ch04 | Tool result deduplication, together with v2.1.91's `file_read_reread` forms input/output dual-side dedup |
+| **Security** | `vendor/seccomp/{arm64,x64}/apply-seccomp` | ch16 | System-level seccomp sandbox, replacing the tree-sitter application-level analysis removed in v2.1.91 |
+| **Hook** | `stop_hook_added`, `stop_hook_command`, `stop_hook_removed` | ch18 | Stop Hook runtime dynamic add/remove — first time the Hook system supports runtime management |
+| **Auth** | `bedrock_setup_started/complete/cancelled`, `oauth_bedrock_wizard_launched` | ch05 | AWS Bedrock guided setup wizard |
+| **Auth** | `oauth_platform_docs_opened` | ch05 | Opening platform docs during OAuth flow |
+| **Tools** | `bash_rerun_used` | ch04 | Bash command re-run functionality |
+| **Model** | `rate_limit_options_menu_select_team` | — | Team option during rate limiting |
+
+### Key Removals
+
+| Removed Signal | Analysis |
+|---------------|----------|
+| `session_tagged`, `tag_command_*` (5 total) | Session tagging system completely removed |
+| `sm_compact` | Legacy compaction event cleaned up (v2.1.91 already introduced cold_compact as replacement) |
+| `skill_improvement_survey` | Skill improvement survey ended |
+| `pid_based_version_locking` | PID-based version locking mechanism removed |
+| `compact_streaming_retry` | Compaction streaming retry cleaned up |
+| `ultraplan_model` | Ultraplan model event refactored |
+| 6 random codename experiment events | Old A/B tests ended (cobalt_frost, copper_bridge, etc.) |
+
+### New Environment Variables
+
+| Variable | Purpose |
+|----------|---------|
+| `CLAUDE_CODE_EXECPATH` | Executable file path |
+| `CLAUDE_CODE_SIMULATE_PROXY_USAGE` | Proxy usage simulation (for testing) |
+| `CLAUDE_CODE_SKIP_FAST_MODE_ORG_CHECK` | Skip Fast Mode organization-level check |
+
+### Design Trends
+
+The v2.1.91 -> v2.1.92 increment is small but directionally clear:
+
+1. **Security strategy descends from application layer to system layer** (tree-sitter -> seccomp)
+2. **Tool system expands from pure execution to advisory** (AdvisorTool)
+3. **Configuration management moves from purely static to runtime-mutable** (Stop Hook dynamic management)
+4. **Enterprise onboarding barrier continues to lower** (Bedrock wizard)
+
+---
+
 *Use `scripts/cc-version-diff.sh` to generate diff data; `docs/anchor-points.md` provides subsystem anchor point locations*

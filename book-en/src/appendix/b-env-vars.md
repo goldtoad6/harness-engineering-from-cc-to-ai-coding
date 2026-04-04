@@ -124,3 +124,89 @@ This appendix lists the key user-configurable environment variables in Claude Co
 | `CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK` | Disable command injection check | Tree-sitter infrastructure entirely removed |
 | `CLAUDE_CODE_DISABLE_MOUSE_CLICKS` | Disable mouse clicks | Feature deprecated |
 | `CLAUDE_CODE_MCP_INSTR_DELTA` | MCP instruction delta | Feature refactored |
+
+---
+
+## Configuration Priority System
+
+Environment variables are just one facet of Claude Code's configuration system. The complete configuration system is composed of 6 layers of sources, merged from lowest to highest priority — later sources override earlier ones. Understanding this priority chain is crucial for diagnosing "why isn't my setting taking effect."
+
+### Six-Layer Priority Model
+
+Configuration sources are defined in `restored-src/src/utils/settings/constants.ts:7-22`, and the merge logic is implemented in the `loadSettingsFromDisk()` function at `restored-src/src/utils/settings/settings.ts:644-796`:
+
+| Priority | Source ID | File Path / Source | Description |
+|----------|-----------|-------------------|-------------|
+| 0 (lowest) | pluginSettings | Plugin-provided base settings | Only includes whitelisted fields (e.g., `agent`), serves as the base layer for all file sources |
+| 1 | `userSettings` | `~/.claude/settings.json` | User global settings, applies across all projects |
+| 2 | `projectSettings` | `$PROJECT/.claude/settings.json` | Project shared settings, committed to version control |
+| 3 | `localSettings` | `$PROJECT/.claude/settings.local.json` | Project local settings, automatically added to `.gitignore` |
+| 4 | `flagSettings` | `--settings` CLI parameter + SDK inline settings | Temporary overrides passed via command line or SDK |
+| 5 (highest) | `policySettings` | Enterprise managed policies (multiple competing sources) | Enterprise admin enforced policies, see below |
+
+### Merge Semantics
+
+Merging uses lodash's `mergeWith` for deep merge, with a custom merger defined at `restored-src/src/utils/settings/settings.ts:538-547`:
+
+- **Objects**: Recursively merged, later source fields override earlier ones
+- **Arrays**: Merged and deduplicated (`mergeArrays`), not replaced — this means `permissions.allow` rules from multiple layers accumulate
+- **`undefined` values**: Interpreted as "delete this key" in `updateSettingsForSource` (`restored-src/src/utils/settings/settings.ts:482-486`)
+
+This array merge semantic is particularly important: if a user allows a tool in `userSettings` and allows another tool in `projectSettings`, the final `permissions.allow` list includes both. This enables multi-layer permission configurations to stack rather than override each other.
+
+### Policy Settings (policySettings) Four-Layer Competition
+
+Policy settings (`policySettings`) have their own internal priority chain, using a "first source with content wins" strategy, implemented at `restored-src/src/utils/settings/settings.ts:322-345`:
+
+| Sub-priority | Source | Description |
+|-------------|--------|-------------|
+| 1 (highest) | Remote Managed Settings | Enterprise policy cache synced from API |
+| 2 | MDM Native Policies (HKLM / macOS plist) | System-level policies read via `plutil` or `reg query` |
+| 3 | File Policies (`managed-settings.json` + `managed-settings.d/*.json`) | Drop-in directory support, merged in alphabetical order |
+| 4 (lowest) | HKCU User Policies (Windows only) | User-level registry settings |
+
+Note that policy settings merge differently from other sources: the four sub-sources within policies are in a **competitive relationship** (first one wins), while policies as a whole are in an **additive relationship** with other sources (deep merged to the top of the configuration chain).
+
+### Override Chain Flowchart
+
+```mermaid
+flowchart TD
+    P["pluginSettings<br/>Plugin base settings"] -->|mergeWith| U["userSettings<br/>~/.claude/settings.json"]
+    U -->|mergeWith| Proj["projectSettings<br/>.claude/settings.json"]
+    Proj -->|mergeWith| L["localSettings<br/>.claude/settings.local.json"]
+    L -->|mergeWith| F["flagSettings<br/>--settings CLI / SDK inline"]
+    F -->|mergeWith| Pol["policySettings<br/>Enterprise managed policies"]
+    Pol --> Final["Final effective config<br/>getInitialSettings()"]
+
+    subgraph PolicyInternal["policySettings internal competition (first wins)"]
+        direction TB
+        R["Remote Managed<br/>Remote API"] -.->|empty?| MDM["MDM Native<br/>plist / HKLM"]
+        MDM -.->|empty?| MF["File Policies<br/>managed-settings.json"]
+        MF -.->|empty?| HK["HKCU<br/>Windows user-level"]
+    end
+
+    Pol --- PolicyInternal
+
+    style Final fill:#e8f4f8,stroke:#2196F3,stroke-width:2px
+    style PolicyInternal fill:#fff3e0,stroke:#FF9800
+```
+
+**Figure B-1: Configuration Priority Override Chain**
+
+### Caching and Invalidation
+
+Configuration loading has a two-layer caching mechanism (`restored-src/src/utils/settings/settingsCache.ts`):
+
+1. **File-level cache**: `parseSettingsFile()` caches the parsed result of each file, avoiding repeated JSON parsing
+2. **Session-level cache**: `getSettingsWithErrors()` caches the merged final result, reused throughout the session
+
+Caches are uniformly invalidated via `resetSettingsCache()` — triggered when the user modifies settings through the `/config` command or `updateSettingsForSource()`. Settings file change detection is handled by `restored-src/src/utils/settings/changeDetector.ts`, which drives React component re-rendering through file system watching.
+
+### Diagnostic Recommendations
+
+When a setting "isn't taking effect," troubleshoot in this order:
+
+1. **Confirm the source**: Use the `/config` command to view the current effective configuration and source annotations
+2. **Check priority**: Is a higher-priority source overriding your setting? `policySettings` is the strongest override
+3. **Check array merging**: Permission rules are additive — if a `deny` rule appears in a higher-priority source, a lower-priority `allow` cannot override it
+4. **Check caching**: After modifying `.json` files within the same session, the configuration may still be cached — restart the session or use `/config` to trigger a refresh
