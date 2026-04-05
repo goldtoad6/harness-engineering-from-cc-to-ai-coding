@@ -82,3 +82,4 @@
 - [Appendix D: Full List of 89 Feature Flags](./appendix/d-feature-flags.md)
 - [Appendix E: Version Evolution Log](./appendix/e-version-evolution.md)
 - [Appendix F: End-to-End Case Traces](./appendix/f-e2e-traces.md)
+- [Appendix G: Authentication & Subscription System](./appendix/g-auth-subscription.md)

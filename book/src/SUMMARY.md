@@ -82,3 +82,4 @@
 - [附录 D：89 个 Feature Flag 完整清单](./appendix/d-feature-flags.md)
 - [附录 E：版本演化记录](./appendix/e-version-evolution.md)
 - [附录 F：端到端案例追踪](./appendix/f-e2e-traces.md)
+- [附录 G：认证与订阅系统 — 从 OAuth 到合规边界](./appendix/g-auth-subscription.md)
