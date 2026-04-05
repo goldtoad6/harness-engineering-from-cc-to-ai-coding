@@ -10,6 +10,7 @@
 - [Chapter 2: Tool System — 40+ Tools as the Model's Hands](./part1/ch02.md)
 - [Chapter 3: Agent Loop — The Full Lifecycle from User Input to Model Response](./part1/ch03.md)
 - [Chapter 4: Tool Execution Orchestration — Permissions, Concurrency, Streaming, and Interrupts](./part1/ch04.md)
+- [Chapter 4b: Plan Mode — From "Act First, Ask Later" to "Look Before You Leap"](./part1/ch04b.md)
 
 ---
 
