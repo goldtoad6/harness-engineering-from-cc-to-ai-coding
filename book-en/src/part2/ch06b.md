@@ -530,3 +530,61 @@ The beta header `files-api-2025-04-14,oauth-2025-04-20` (line 27) indicates this
 5. **Customize the streaming timeout threshold.** If your network environment has high latency (e.g., accessing the API through a VPN or satellite link), the default 90-second Idle Timeout may be too aggressive. You can adjust the timeout threshold by setting the `CLAUDE_STREAM_IDLE_TIMEOUT_MS` environment variable (also requires `CLAUDE_ENABLE_STREAM_WATCHDOG=1`).
 
 6. **Adjust the retry budget via `CLAUDE_CODE_MAX_RETRIES`.** The default 10 retries suit most scenarios, but if your API provider frequently returns transient errors, you can increase it; if you want faster failure feedback, you can reduce it to 3-5.
+
+---
+
+## Version Evolution: v2.1.100 — Bedrock/Vertex Setup Wizard and Model Upgrade
+
+> The following analysis is based on v2.1.100 bundle signal comparison, combined with v2.1.88 source code inference.
+
+### Interactive Cloud Platform Setup Wizard
+
+v2.1.100 introduces complete interactive setup wizards for AWS Bedrock and Google Vertex AI, replacing the manual environment variable configuration required in v2.1.88. Using Bedrock as an example (Vertex flow is symmetric), the complete setup lifecycle is covered by 3 events:
+
+```text
+tengu_bedrock_setup_started → tengu_bedrock_setup_complete / tengu_bedrock_setup_cancelled
+tengu_vertex_setup_started → tengu_vertex_setup_complete / tengu_vertex_setup_cancelled
+```
+
+The setup wizard launches from a unified platform selection menu — users can choose Bedrock, Vertex, or Microsoft Foundry (`oauth_platform_docs_opened` opens the corresponding documentation page). Upon completion, the authentication method (`auth_method`) is recorded in telemetry.
+
+### Automatic Model Upgrade Detection
+
+The most interesting addition in v2.1.100 is **automatic model upgrade detection**. When Anthropic releases new model versions, the system automatically detects whether the user's current configuration can be upgraded:
+
+```text
+Detection flow:
+  upgrade_check (check for available upgrades)
+    → probe_result (probe whether new model is accessible in user's Bedrock/Vertex account)
+      → upgrade_accepted / upgrade_declined (user decision)
+        → upgrade_relaunch (restart after upgrade) / upgrade_save_failed (save failure)
+```
+
+The probing logic extracted from the bundle reveals an elegant design:
+
+```javascript
+// v2.1.100 bundle reverse engineering — Bedrock upgrade probing
+// 1. Check unpinned model tiers
+d("tengu_bedrock_default_check", { unpinned_tiers: String(q.length) });
+
+// 2. For each unpinned tier, probe whether new model is accessible
+let w = await Za8(O, Y.tier);  // Za8 = probeBedrockModel
+d("tengu_bedrock_probe_result", {
+  tier: Y.tier,
+  model_id: O,
+  accessible: String(w)
+});
+```
+
+**Key design decisions**:
+- Only checks "unpinned" model tiers — if the user explicitly pinned a model ID via environment variables, the system won't suggest upgrades
+- Declined upgrades are persisted in user settings via `bedrockDeclinedUpgrades` / `vertexDeclinedUpgrades`, preventing repeated prompting
+- When the default model is inaccessible, `default_fallback` triggers — automatically switching to an alternative model in the same tier
+
+### Mantle Authentication Backend
+
+v2.1.100 introduces `mantle` as the fifth API authentication backend (alongside firstParty, bedrock, vertex, and foundry). Enabled via the `CLAUDE_CODE_USE_MANTLE` environment variable, skippable with `CLAUDE_CODE_SKIP_MANTLE_AUTH`. Mantle uses `anthropic.`-prefixed model IDs (e.g., `anthropic.claude-haiku-4-5`), suggesting this is an Anthropic-hosted enterprise authentication channel, distinct from direct API calls.
+
+### API Retry Enhancement
+
+The new `tengu_api_retry_after_too_long` event indicates v2.1.100 adds special handling for excessive Retry-After header values — when the API returns a retry wait time exceeding a reasonable threshold, the system may choose to abandon waiting and report an error immediately, preventing users from experiencing prolonged unresponsiveness.

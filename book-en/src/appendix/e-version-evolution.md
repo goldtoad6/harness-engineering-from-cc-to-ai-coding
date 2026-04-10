@@ -251,3 +251,174 @@ The v2.1.91 -> v2.1.92 increment is small but directionally clear:
 ---
 
 *Use `scripts/cc-version-diff.sh` to generate diff data; `docs/anchor-points.md` provides subsystem anchor point locations*
+
+---
+
+## v2.1.92 -> v2.1.100
+
+**Overview**: cli.js +870KB (+6.9%) | Tengu events +45/-21 (net +24) | Env vars +8/-2 | New audio-capture vendor
+
+### High Impact Changes
+
+| Change | Affected Chapters | Details |
+|--------|-------------------|---------|
+| Dream system maturation | ch24 Memory System | kairos_dream cron scheduling + auto_dream_skipped observability + dream_invoked manual trigger tracking |
+| Bedrock/Vertex full wizard | ch06b API Communication | 18 events covering setup, probing, and upgrade complete lifecycle |
+| Tool Result Dedup | ch10 File State Preservation | Tool result dedup with short ID references saving context |
+| Bridge REPL major cleanup | ch06b API Communication | 16 bridge_repl_* events removed (minor residual references remain), communication mechanism restructured |
+| toolStats statistics field | ch24 Memory System | sdk-tools.d.ts adds 7-dimensional tool usage statistics |
+
+### Medium Impact Changes
+
+| Change | Affected Chapters | Details |
+|--------|-------------------|---------|
+| Advisor tool | ch21 Effort/Thinking | Server-side strong model review tool, feature gate `advisor-tool-2026-03-01` |
+| Autofix PR | ch20c Ultraplan | Remote session auto-fix PR, alongside ultraplan/ultrareview |
+| Team Onboarding | ch20b Teams | Usage report generation + onboarding discovery |
+| Mantle auth backend | ch06b, Appendix G | Fifth API authentication channel |
+| Cold compact enhancement | ch09 Auto-Compaction | Feature Flag driven + MAX_CONTEXT_TOKENS override |
+
+### Low Impact Changes
+
+| Change | Affected Chapters |
+|--------|-------------------|
+| `hook_prompt_transcript_truncated` + stop_hook lifecycle | ch18 Hooks |
+| Perforce VCS support (`CLAUDE_CODE_PERFORCE_MODE`) | ch04 Tools |
+| audio-capture vendor binaries (6 platforms) | Potential new feature |
+| `image_resize` — automatic image scaling | ch04 Tools |
+| `bash_allowlist_strip_all` — bash allowlist operation | ch16 Permissions |
+| +8/-2 environment variables | Appendix B |
+| 12+ new experiment codename events | ch23 Feature Flags |
+
+### v2.1.100 New Features in Detail
+
+The following features **did not exist** in v2.1.92 or only had rudimentary form, and are incremental additions in v2.1.92→v2.1.100.
+
+#### 1. Kairos Dream — Background Scheduled Memory Consolidation
+
+**Event**: `tengu_kairos_dream`
+
+**v2.1.92 status**: v2.1.92 already had `auto_dream` and manual `/dream` trigger, but no background cron scheduling.
+
+**v2.1.100 addition**:
+
+Kairos Dream is the third trigger mode for the Dream system — executing memory consolidation automatically via cron scheduling in the background, without waiting for users to start new sessions. Cron expression generation extracted from the bundle:
+
+```javascript
+// v2.1.100 bundle reverse engineering
+function P_A() {
+  let q = Math.floor(Math.random() * 360);
+  return `${q % 60} ${Math.floor(q / 60)} * * *`;
+  // Random minute+hour offset, avoids multi-user simultaneous triggers
+}
+```
+
+Combined with the `auto_dream_skipped` event's `reason` field ("sessions"/"lock"), Kairos Dream implements a complete background memory consolidation lifecycle.
+
+**Book relevance**: ch24 updated with Dream system analysis (three-tier trigger matrix); ch29 observability chapter can reference `auto_dream_skipped` skip reason distribution as an observability design case study.
+
+---
+
+#### 2. Bedrock/Vertex Model Upgrade Wizard
+
+**Events**: 18 events (9 Bedrock + 9 Vertex), symmetric structure
+
+**v2.1.92 status**: v2.1.92 only had Bedrock's `setup_started/complete/cancelled` (3 events).
+
+**v2.1.100 addition**:
+
+Complete model upgrade detection and automatic switching mechanism. Design highlights:
+
+1. **Unpinned model detection**: Scans user configuration to find model tiers not explicitly pinned via environment variables
+2. **Accessibility probing**: `probeBedrockModel` / `probeVertexModel` verify whether new models are available in the user's account
+3. **User confirmation**: Upgrades don't auto-execute; require user accept/decline
+4. **Persistent decline**: Declined upgrades are recorded in user settings, preventing repeated prompting
+5. **Default fallback**: When default model is inaccessible, automatic fallback to same-tier alternative
+
+The Vertex wizard (`vertex_setup_started` etc.) is new in v2.1.100; v2.1.92 had no interactive Vertex setup.
+
+---
+
+#### 3. Autofix PR — Remote Auto-Fix
+
+**Events**: `tengu_autofix_pr_started`, `tengu_autofix_pr_result`
+
+**v2.1.92 status**: Did not exist. v2.1.92 had ultraplan and ultrareview, but no autofix-pr.
+
+**v2.1.100 addition**:
+
+Autofix PR is the fourth remote agent task type, listed alongside `remote-agent`, `ultraplan`, and `ultrareview` in the `XAY` remote task type registry. Workflow extracted from the bundle:
+
+```javascript
+// v2.1.100 bundle reverse engineering
+// Remote task type registry
+XAY = ["remote-agent", "ultraplan", "ultrareview", "autofix-pr", "background-pr"];
+
+// Autofix PR launch
+d("tengu_autofix_pr_started", {});
+let b = await kt({
+  initialMessage: h,
+  source: "autofix_pr",
+  branchName: P,
+  reuseOutcomeBranch: P,
+  title: `Autofix PR: ${k}/${R}#${v} (${P})`
+});
+```
+
+Autofix PR spawns a remote Claude Code session that monitors a specified Pull Request and automatically fixes issues (CI failures, code review feedback). Unlike Ultraplan (planning) and Ultrareview (reviewing), Autofix PR focuses on **executing fixes**.
+
+Note `background-pr` also appears in the task type list, suggesting another background PR processing mode.
+
+---
+
+#### 4. Team Onboarding — Team Usage Report
+
+**Events**: `tengu_team_onboarding_invoked`, `tengu_team_onboarding_generated`, `tengu_team_onboarding_discovery_shown`
+
+**v2.1.92 status**: Did not exist.
+
+**v2.1.100 addition**:
+
+Team onboarding report generator that collects user usage data (session count, slash command count, MCP server count) and generates a guided document from a template. Key parameters extracted from the bundle:
+
+- `windowDays`: Analysis window (1-365 days)
+- `sessionCount`, `slashCommandCount`, `mcpServerCount`: Usage statistic dimensions
+- `GUIDE_TEMPLATE`, `USAGE_DATA`: Report template variables
+
+The `cedar_inlet` experiment event controls team onboarding discovery display (`discovery_shown`), suggesting this is an A/B tested feature.
+
+---
+
+### Experiment Codename Events
+
+The following events with random codenames are A/B tests with undisclosed purposes:
+
+| Event | Status | Notes |
+|-------|--------|-------|
+| `tengu_amber_sentinel` | New in v2.1.100 | — |
+| `tengu_basalt_kite` | New in v2.1.100 | — |
+| `tengu_billiard_aviary` | New in v2.1.100 | — |
+| `tengu_cedar_inlet` | New in v2.1.100 | Related to Team Onboarding discovery |
+| `tengu_coral_beacon` | New in v2.1.100 | — |
+| `tengu_flint_harbor` / `_prompt` / `_heron` | New in v2.1.100 | 3 related events |
+| `tengu_garnet_loom` | New in v2.1.100 | — |
+| `tengu_pyrite_wren` | New in v2.1.100 | — |
+| `tengu_shale_finch` | New in v2.1.100 | — |
+
+Experiments present in v2.1.92 but removed in v2.1.100: `amber_lantern`, `editafterwrite_qpl`, `lean_sub_pf`, `maple_forge_w`, `relpath_gh`.
+
+---
+
+### Design Trends
+
+The v2.1.92→v2.1.100 evolution direction:
+
+1. **Memory system from passive to active** (auto_dream → kairos_dream scheduled execution + observable skip reasons)
+2. **Cloud platforms from configuration to wizards** (manual env vars → interactive setup wizards + automatic model upgrade detection)
+3. **IDE bridge architecture restructured** (bridge_repl largely removed, 16 events cleared — transitioning to new communication mechanism)
+4. **Remote agent family expansion** (ultraplan/ultrareview → + autofix-pr + background-pr)
+5. **Context optimization refinement** (tool_result_dedup reduces duplicates + MAX_CONTEXT_TOKENS user-controllable)
+
+---
+
+*Use `scripts/cc-version-diff.sh` to generate diff data; `docs/anchor-points.md` provides subsystem anchor point locations*

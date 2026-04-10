@@ -251,3 +251,179 @@ v2.1.91→v2.1.92 的增量较小但方向明确：
 ---
 
 *使用 `scripts/cc-version-diff.sh` 生成差异数据，`docs/anchor-points.md` 提供子系统锚点定位*
+
+---
+
+## v2.1.92 → v2.1.100
+
+**概览**：cli.js +870KB (+6.9%) | Tengu 事件 +45/-21（净 +24）| 环境变量 +8/-2 | 新增 audio-capture vendor
+
+### 高影响变化
+
+| 变化 | 影响章节 | 详情 |
+|------|---------|------|
+| Dream 系统成熟化 | ch24 记忆系统 | kairos_dream 定时调度 + auto_dream_skipped 可观测性 + dream_invoked 手动触发追踪 |
+| Bedrock/Vertex 完整向导 | ch06b API 通信层 | 18 个事件覆盖设置、探测、升级完整生命周期 |
+| Tool Result Dedup | ch10 文件状态保留 | 工具结果去重，短 ID 引用节省上下文 |
+| Bridge REPL 事件大规模清理 | ch06b API 通信层 | 16 个 bridge_repl_* 事件移除（少量残留引用），暗示 IDE 桥接通信机制重构 |
+| toolStats 统计字段 | ch24 记忆系统 | sdk-tools.d.ts 新增 7 维度工具使用统计 |
+
+### 中影响变化
+
+| 变化 | 影响章节 | 详情 |
+|------|---------|------|
+| Advisor 工具 | ch21 Effort/Thinking | 服务端强模型审阅工具，feature gate `advisor-tool-2026-03-01` |
+| Autofix PR | ch20c Ultraplan | 远程会话自动修复 PR，与 ultraplan/ultrareview 并列 |
+| Team Onboarding | ch20b Teams | 使用报告生成 + 入门引导发现 |
+| Mantle 认证后端 | ch06b API 通信层, 附录 G | 第五种 API 认证通道 |
+| 冷压缩增强 | ch09 自动压缩 | Feature Flag 驱动 + MAX_CONTEXT_TOKENS 覆盖 |
+
+### 低影响变化
+
+| 变化 | 影响章节 |
+|------|---------|
+| `hook_prompt_transcript_truncated` + stop_hook 生命周期 | ch18 Hooks |
+| Perforce 版本控制支持 (`CLAUDE_CODE_PERFORCE_MODE`) | ch04 工具 |
+| audio-capture vendor 二进制（6 平台） | 潜在新功能 |
+| `image_resize` — 图片自动缩放 | ch04 工具 |
+| `bash_allowlist_strip_all` — bash 白名单操作 | ch16 权限 |
+| +8/-2 环境变量 | 附录 B |
+| 12+ 新实验代号事件 | ch23 Feature Flag |
+
+### v2.1.100 新功能详解
+
+以下功能在 v2.1.92 中**不存在**或仅有雏形，是 v2.1.92→v2.1.100 增量新增的。
+
+#### 1. Kairos Dream — 后台定时记忆整合
+
+**事件**：`tengu_kairos_dream`
+
+**v2.1.92 状态**：v2.1.92 已有 `auto_dream` 和 `/dream` 手动触发，但无后台定时调度。
+
+**v2.1.100 新增**：
+
+Kairos Dream 是 Dream 系统的第三种触发模式——通过 cron 调度在后台自动执行记忆整合，无需等待用户启动新会话。从 bundle 中提取到的 cron 表达式生成：
+
+```javascript
+// v2.1.100 bundle 逆向
+function P_A() {
+  let q = Math.floor(Math.random() * 360);
+  return `${q % 60} ${Math.floor(q / 60)} * * *`;
+  // 随机分钟+小时偏移，避免多用户同时触发
+}
+```
+
+配合 `auto_dream_skipped` 事件的 `reason` 字段（"sessions"/"lock"），Kairos Dream 实现了完整的后台记忆整合生命周期。
+
+**本书关联**：ch24 已更新 Dream 系统分析（三级触发矩阵），ch29 可观测性章节可引用 `auto_dream_skipped` 的跳过原因分布作为可观测性设计案例。
+
+---
+
+#### 2. Bedrock/Vertex 模型升级向导
+
+**事件**：18 个事件（Bedrock 9 个 + Vertex 9 个），结构对称
+
+**v2.1.92 状态**：v2.1.92 只有 Bedrock 的 `setup_started/complete/cancelled`（3 个事件）。
+
+**v2.1.100 新增**：
+
+完整的模型升级检测和自动切换机制。设计要点：
+
+1. **未固定模型检测**：扫描用户配置，找出未通过环境变量显式固定的模型层级
+2. **可用性探测**：`probeBedrockModel` / `probeVertexModel` 验证新模型在用户账户中是否可用
+3. **用户确认**：升级不自动执行，需要用户 accept/decline
+4. **持久化拒绝**：declined 升级记录在用户设置中，不会反复提示
+5. **默认回退**：当默认模型不可用时，自动 fallback 到同层级备选
+
+Vertex 向导（`vertex_setup_started` 等）是 v2.1.100 新增的，v2.1.92 中 Vertex 无交互式设置。
+
+**本书关联**：ch06b 已更新 Bedrock/Vertex 向导分析。附录 G（认证系统）可引用 Mantle 认证后端。
+
+---
+
+#### 3. Autofix PR — 远程自动修复
+
+**事件**：`tengu_autofix_pr_started`、`tengu_autofix_pr_result`
+
+**v2.1.92 状态**：不存在。v2.1.92 有 ultraplan 和 ultrareview，但无 autofix-pr。
+
+**v2.1.100 新增**：
+
+Autofix PR 是第四种远程代理任务类型，与 `remote-agent`、`ultraplan`、`ultrareview` 并列在 `XAY` 远程任务类型注册表中。从 bundle 中提取到的工作流：
+
+```javascript
+// v2.1.100 bundle 逆向
+// 远程任务类型注册
+XAY = ["remote-agent", "ultraplan", "ultrareview", "autofix-pr", "background-pr"];
+
+// Autofix PR 的启动
+d("tengu_autofix_pr_started", {});
+// ... 创建远程会话，重用 outcome 分支
+let b = await kt({
+  initialMessage: h,
+  source: "autofix_pr",
+  branchName: P,
+  reuseOutcomeBranch: P,
+  title: `Autofix PR: ${k}/${R}#${v} (${P})`
+});
+```
+
+Autofix PR 生成一个远程 Claude Code 会话，监控指定的 Pull Request 并自动修复问题（如 CI 失败、代码审查意见）。与 Ultraplan（规划）和 Ultrareview（审阅）不同，Autofix PR 聚焦于**执行修复**。
+
+注意 `background-pr` 也出现在任务类型列表中，暗示还有一种后台 PR 处理模式。
+
+**本书关联**：ch20c（Ultraplan）可扩展覆盖 Autofix PR 和 background-pr。
+
+---
+
+#### 4. Team Onboarding — 团队使用报告
+
+**事件**：`tengu_team_onboarding_invoked`、`tengu_team_onboarding_generated`、`tengu_team_onboarding_discovery_shown`
+
+**v2.1.92 状态**：不存在。
+
+**v2.1.100 新增**：
+
+团队入门报告生成器，收集用户的使用数据（会话数、slash 命令数、MCP 服务器数），按模板生成引导文档。从 bundle 中提取的关键参数：
+
+- `windowDays`：分析窗口（1-365 天）
+- `sessionCount`、`slashCommandCount`、`mcpServerCount`：使用统计维度
+- `GUIDE_TEMPLATE`、`USAGE_DATA`：报告模板变量
+
+`cedar_inlet` 实验事件控制团队入门引导的发现展示（`discovery_shown`），暗示这是一个 A/B 测试中的功能。
+
+---
+
+### 实验代码名事件
+
+以下带随机代码名的事件属于 A/B 测试，用途未公开：
+
+| 事件 | 状态 | 备注 |
+|------|------|------|
+| `tengu_amber_sentinel` | v2.1.100 新增 | — |
+| `tengu_basalt_kite` | v2.1.100 新增 | — |
+| `tengu_billiard_aviary` | v2.1.100 新增 | — |
+| `tengu_cedar_inlet` | v2.1.100 新增 | 与 Team Onboarding discovery 关联 |
+| `tengu_coral_beacon` | v2.1.100 新增 | — |
+| `tengu_flint_harbor` / `_prompt` / `_heron` | v2.1.100 新增 | 3 个相关事件 |
+| `tengu_garnet_loom` | v2.1.100 新增 | — |
+| `tengu_pyrite_wren` | v2.1.100 新增 | — |
+| `tengu_shale_finch` | v2.1.100 新增 | — |
+
+v2.1.92 中存在但在 v2.1.100 中移除的实验：`amber_lantern`、`editafterwrite_qpl`、`lean_sub_pf`、`maple_forge_w`、`relpath_gh`。
+
+---
+
+### 设计趋势
+
+v2.1.92→v2.1.100 的演化方向：
+
+1. **记忆系统从被动到主动**（auto_dream → kairos_dream 定时执行 + 可观测跳过原因）
+2. **云平台从配置到向导**（手动环境变量 → 交互式设置向导 + 自动模型升级检测）
+3. **IDE 桥接架构重构**（bridge_repl 完全移除，16 个事件清除——转向新通信机制）
+4. **远程代理家族扩展**（ultraplan/ultrareview → + autofix-pr + background-pr）
+5. **上下文优化精细化**（tool_result_dedup 减少重复 + MAX_CONTEXT_TOKENS 用户可控）
+
+---
+
+*使用 `scripts/cc-version-diff.sh` 生成差异数据，`docs/anchor-points.md` 提供子系统锚点定位*
